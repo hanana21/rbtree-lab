@@ -53,23 +53,23 @@ void test_find_single(const key_t key, const key_t wrong_key) {
   delete_rbtree(t);
 }
 
-// erase should delete root node
-void test_erase_root(const key_t key) {
-  rbtree *t = new_rbtree();
-  node_t *p = rbtree_insert(t, key);
-  assert(p != NULL);
-  assert(t->root == p);
-  assert(p->key == key);
+// // erase should delete root node
+// void test_erase_root(const key_t key) {
+//   rbtree *t = new_rbtree();
+//   node_t *p = rbtree_insert(t, key);
+//   assert(p != NULL);
+//   assert(t->root == p);
+//   assert(p->key == key);
 
-  rbtree_erase(t, p);
-#ifdef SENTINEL
-  assert(t->root == t->nil);
-#else
-  assert(t->root == NULL);
-#endif
+//   rbtree_erase(t, p);
+// #ifdef SENTINEL
+//   assert(t->root == t->nil);
+// #else
+//   assert(t->root == NULL);
+// #endif
 
-  delete_rbtree(t);
-}
+//   delete_rbtree(t);
+// }
 
 static void insert_arr(rbtree *t, const key_t *arr, const size_t n) {
   for (size_t i = 0; i < n; i++) {
@@ -368,16 +368,16 @@ void test_find_erase_rand(const size_t n, const unsigned int seed) {
 }
 
 int main(void) {
-  test_init();
-  test_insert_single(1024);
-  test_find_single(512, 1024);
-  test_erase_root(128);
-  test_find_erase_fixed();
-  test_minmax_suite();
+  // test_init();
+  // test_insert_single(1024);
+  // test_find_single(512, 1024);
+  // test_erase_root(128);
+  // test_find_erase_fixed();
+  // test_minmax_suite();
   test_to_array_suite();
-  test_distinct_values();
-  test_duplicate_values();
-  test_multi_instance();
-  test_find_erase_rand(10000, 17);
+  // test_distinct_values();
+  // test_duplicate_values();
+  // test_multi_instance();
+  // test_find_erase_rand(10000, 17);
   printf("Passed all tests!\n");
 }

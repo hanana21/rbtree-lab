@@ -21,6 +21,13 @@ typedef struct {
 rbtree *new_rbtree(void);
 void delete_rbtree(rbtree *);
 
+node_t* get_next_node(const rbtree* t, node_t *p);
+void exchange_color(node_t* a, node_t* b);
+void rbtree_insert_fixup(rbtree* t, node_t* Node);
+void right_rotate(rbtree* t, node_t* Node);
+void left_rotate(rbtree* t, node_t* Node);
+node_t* get_next_node(const rbtree* t, node_t *p);
+
 node_t *rbtree_insert(rbtree *, const key_t);
 node_t *rbtree_find(const rbtree *, const key_t);
 node_t *rbtree_min(const rbtree *);
