@@ -187,10 +187,104 @@ node_t *rbtree_max(const rbtree *t) {
   return current;
 }
 
-int rbtree_erase(rbtree *t, node_t *p) {
-  // TODO: implement erase
+int rbtree_erase(rbtree *t, node_t *delete) {
+  node_t* remove;//지워질 노드 
+  node_t* remove_parent, *replace_node;
+  int is_remove_black, is_remove_left;
+
+  //자식이 2개인 경우 대체 노드 찾기
+  if(delete->left != t->nil && delete->right != t->nil){
+    remove = get_next_node(t,delete);
+    replace_node = remove->right;
+    delete -> key = remove -> key;
+  }else{//자식이 1개인 경우
+    remove = delete;
+    replace_node = (remove -> right != t->nil)? remove-> right:remove->left;
+  }
+  remove_parent = remove->parent;
+  //#1 루트 노드 제거하기
+  if(remove == t->root){
+    t->root = replace_node;
+    t->root->color = RBTREE_BLACK;
+    free(remove);
+    return 0;
+  }
+  //remove의 부모와 자식 이어주기 
+  is_remove_black = remove->color;//제거전 자기 색 저장
+  is_remove_left = remove_parent->left==remove;
+
+  if(is_remove_left){// 왼쪽 자식이었으면 왼쪽으로 이어주고
+    remove_parent->left = replace_node;
+  }else{//오른쪽 자식이었으면 오른쪽으로 이어준다.
+    remove_parent->right = replace_node;
+  }
+  //부모도 연결(양방향)
+  replace_node->parent = remove_parent;
+  free(remove);
+
+  //검정 노드 제거시 불균형 복구필요
+  if(is_remove_black){
+    rbtree_erase_fixup(t,remove_parent,is_remove_left);
+  }
   return 0;
 }
+void rbtree_erase_fixup(rbtree*t, node_t* parent, int is_left){
+  //삭제 후 대체 노드가 RED라면 그냥 BLACK으로 변경
+  node_t* extra_black = is_left?parent->left:parent->right;
+  if(extra_black->color==RBTREE_RED){
+    extra_black->color = RBTREE_BLACK;
+    return;
+  }
+  node_t* sibling = is_left?parent->right:parent->left;
+  node_t* sibling_left = sibling->left;
+  node_t* sibling_righ = sibling->right;
+  //형제 색 빨간색인 경우
+  if(sibling->color == RBTREE_RED){
+    if(is_left){
+      left_rotate(t,sibling);
+    }else{
+      right_rotate(t,sibling);
+    }
+    exchange_color(sibling,parent);
+    rbtree_erase_fixup(t,parent,is_left);
+    return;
+  }
+  node_t* near = is_left?sibling_left:sibling_righ;
+  node_t* distant = is_left?sibling_righ:sibling_left;
+  //부모는 왼쪽,형제가 black 형제의 가까운 자식 red, 먼자식black
+  if(is_left && near->color ==RBTREE_RED && distant->color == RBTREE_BLACK){
+    right_rotate(t,near);
+    exchange_color(sibling,near);
+    rbtree_erase_fixup(t,parent,is_left);
+    return;
+  }
+  //부모는 왼쪽,형제가 black, 더 먼 자식 RED(펴진 애)
+  if(is_left && distant->color == RBTREE_RED){
+    left_rotate(t,sibling);
+    exchange_color(sibling,parent);
+    distant->color = RBTREE_BLACK;
+    return;
+  }
+  //부모는 오른쪽, 형제가 블랙, 가까운 자식 레드, 형제 더먼 자식 black
+  if(near->color ==RBTREE_RED && distant->color == RBTREE_BLACK){
+    left_rotate(t,near);
+    exchange_color(sibling,near);
+    rbtree_erase_fixup(t,parent,is_left);
+    return;
+  }
+  if(distant->color == RBTREE_RED){
+    right_rotate(t,sibling);
+    exchange_color(sibling,parent);
+    distant->color = RBTREE_BLACK;
+    return;
+  }
+  //형제가 블랙, 형제 자식 둘다 블랙
+  sibling-> color = RBTREE_RED;
+
+  if(parent != t->root)
+    rbtree_erase_fixup(t,parent->parent,parent->parent->left==parent);
+}
+
 //t를 n번 순회한 결과를 arr에 담는 함수 
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
   node_t* current = rbtree_min(t);
